@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jr3_sensor_read_udp_server", "jr3_sensor_read_udp_server\jr3_sensor_read_udp_server.vcxproj", "{03E4F5AB-A17C-4BD1-9FC5-D8B4ACF53236}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jr3_sensor_udp_streaming_server", "jr3_sensor_udp_streaming_server\jr3_sensor_udp_streaming_server.vcxproj", "{649F4725-81CC-453E-8D67-95D611FBA7A9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jr3_sensor_read_udp_client", "jr3_sensor_read_udp_client\jr3_sensor_read_udp_client.vcxproj", "{7F641A11-2B6F-4A25-B446-A99317A15012}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03E4F5AB-A17C-4BD1-9FC5-D8B4ACF53236}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03E4F5AB-A17C-4BD1-9FC5-D8B4ACF53236}.Debug|Win32.Build.0 = Debug|Win32
+		{03E4F5AB-A17C-4BD1-9FC5-D8B4ACF53236}.Release|Win32.ActiveCfg = Release|Win32
+		{03E4F5AB-A17C-4BD1-9FC5-D8B4ACF53236}.Release|Win32.Build.0 = Release|Win32
+		{649F4725-81CC-453E-8D67-95D611FBA7A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{649F4725-81CC-453E-8D67-95D611FBA7A9}.Debug|Win32.Build.0 = Debug|Win32
+		{649F4725-81CC-453E-8D67-95D611FBA7A9}.Release|Win32.ActiveCfg = Release|Win32
+		{649F4725-81CC-453E-8D67-95D611FBA7A9}.Release|Win32.Build.0 = Release|Win32
+		{7F641A11-2B6F-4A25-B446-A99317A15012}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F641A11-2B6F-4A25-B446-A99317A15012}.Debug|Win32.Build.0 = Debug|Win32
+		{7F641A11-2B6F-4A25-B446-A99317A15012}.Release|Win32.ActiveCfg = Release|Win32
+		{7F641A11-2B6F-4A25-B446-A99317A15012}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
