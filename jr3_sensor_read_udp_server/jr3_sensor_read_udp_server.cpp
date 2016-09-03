@@ -13,31 +13,7 @@
 #include "jr3pci_ft.h"
 #include "config.h"
 #include "data_transmission.h"
-
-const unsigned char TAG_INIT		= 0;
-const unsigned char TAG_ACK_INIT	= 1;
-const unsigned char TAG_DATA		= 2;
-const unsigned char TAG_FT_DATA		= 3;
-const unsigned char TAG_REQ_FT_DATA = 4;
-const unsigned char TAG_REQ_DATA	= 5;
-const unsigned char TAG_REQ_OS_RST	= 6;
-const unsigned char TAG_ACK_OS_RST	= 7;
-const unsigned char TAG_RNDTRIP		= 8;
-
-
-short chararray2short(unsigned char *in_ch){
-	short temp = in_ch[0];
-	temp = temp << 8;
-	return temp | in_ch[1];
-}
-
-unsigned char* short2chararray(short in_sh){
-	unsigned char temp[2];
-	temp[0] = (in_sh >> 8) & 0xFF;
-	temp[1] = in_sh & 0x00FF;
-	return temp;
-}
-
+#include "jr3_message_tags.h"
 
 int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 

@@ -1,10 +1,11 @@
+#ifndef TBS_JR3_FT_UDP_CLIENT
+#define TBS_JR3_FT_UDP_CLIENT
 
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#pragma comment(lib, "Ws2_32.lib")
-#include <Windows.h>
 #include <crtdbg.h>
 #include <string>
 #include "jr3pci_ft.h"
+#include "data_transmission.h"
 
-void init_connection(char*, short);
+void init_connection(char*, short, char*, short);
+
+#endif

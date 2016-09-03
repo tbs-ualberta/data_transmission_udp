@@ -1,8 +1,6 @@
 
-#ifndef TBS_JR3_FT_UDP_CLIENT
-#define TBS_JR3_FT_UDP_CLIENT
-
 #include "tbs_jr3_ft_udp_client.h"
+#include "jr3_message_tags.h"
 
 using namespace std;
 
@@ -10,58 +8,13 @@ SOCKET  g_socketC;
 struct sockaddr_in g_serverInfo;
 int g_len;
 
-const unsigned char TAG_INIT		= 0;
-const unsigned char TAG_ACK_INIT	= 1;
-const unsigned char TAG_DATA		= 2;
-const unsigned char TAG_FT_DATA		= 3;
-const unsigned char TAG_REQ_FT_DATA	= 4;
-const unsigned char TAG_REQ_DATA	= 5;
-const unsigned char TAG_REQ_OS_RST	= 6;
-const unsigned char TAG_ACK_OS_RST	= 7;
+void init_connection(char* ip_local_scp, short port_local_ss,
+        char* ip_remote_scp, short port_remote_ss){
 
-void init_connection(char* ip_addr, short port){
-
-	// Init winsock
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR) {
-		printf("\nWSAStartup failed with error: %d\n", iResult);
-	}
-
-	g_len = sizeof(g_serverInfo);
-	g_serverInfo.sin_family = AF_INET;
-	g_serverInfo.sin_port = htons(port);
-	g_serverInfo.sin_addr.s_addr = inet_addr(ip_addr);
-
-
-	g_socketC = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (g_socketC == INVALID_SOCKET) {
-		printf("\nSocket failed with error: %ld\n", WSAGetLastError());
-		WSACleanup();
-	}
-	g_socketC = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
-}
-
-
-short chararray2short(unsigned char *in_ch){
-	short temp = in_ch[0];
-	temp = temp << 8;
-	return temp | in_ch[1];
-}
-
-unsigned char* short2chararray(short in_sh){
-	unsigned char temp[2];
-	temp[0] = (in_sh >> 8) & 0xFF;
-	temp[1] = in_sh & 0x00FF;
-	return temp;
-}
-
-unsigned char* short2chararray(unsigned short in_sh){
-	unsigned char temp[2];
-	temp[0] = (in_sh >> 8) & 0xFF;
-	temp[1] = in_sh & 0x00FF;
-	return temp;
+	int error = init_transmission(
+		ip_local_scp, port_local_ss, ip_remote_scp, port_remote_ss);
+	if(error) printf("\nSocket init failed with error: %ld\n", error);
+	else printf("\nSocket initialized on %s:%d.", ip_remote_scp, port_remote_ss);
 }
 
 // API functions
@@ -77,6 +30,7 @@ short read_jr3(unsigned short address, short processor_number, short na){
 	unsigned char tag;
 	short buffer_sh[512];
 	unsigned char* temp;
+	int comm_error = 0;
 
 	//Step 1: Request data
 	buffer_ch[0] = TAG_REQ_DATA;
@@ -84,15 +38,17 @@ short read_jr3(unsigned short address, short processor_number, short na){
 	buffer_ch[1] = temp[0];
 	buffer_ch[2] = temp[1];
 	buffer_ch[3] = processor_number;
-	if (sendto(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, g_len) == SOCKET_ERROR)
-	{
-		printf("\nsendto failed in 'read_jr3' with error: %d", WSAGetLastError());
+
+	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	if (comm_error){
+		printf("\nSending failed in 'read_jr3' with error: %d", comm_error);
 	}
 
-	//Step 2: Wait for data to receive
-	recvfrom(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, &g_len);
+	//Step 2: Wait for data to be received
+	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	if (comm_error){
+		printf("\nListening failed in 'read_jr3' with error: %d", comm_error);
+	}
 	tag = buffer_ch[0];
 	short result;
 	if (tag == TAG_DATA){
@@ -117,19 +73,23 @@ short reset_offsets(short processor_number, short na){
 	unsigned char tag;
 	short buffer_sh[512];
 	unsigned char* temp;
+	int comm_error = 0;
 
 	//Step 1: Request data
 	buffer_ch[0] = TAG_REQ_OS_RST;
 	buffer_ch[1] = processor_number;
-	if (sendto(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, g_len) == SOCKET_ERROR)
-	{
-		printf("\nsendto failed in 'reset_offsets' with error: %d", WSAGetLastError());
+	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	if (comm_error){
+		printf("\nSending failed in 'reset_offsets' with error: %d",
+			comm_error);
 	}
 
 	//Step 2: Wait for data to receive
-	recvfrom(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, &g_len);
+	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	if(comm_error){
+		printf("Listening failed in 'reset_offsets' with error: %d",
+			comm_error);
+	}
 	tag = buffer_ch[0];
 	short result;
 	if (tag == TAG_ACK_OS_RST){
@@ -148,9 +108,9 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
     char buffer_ch[1024];
     unsigned char tag;
     short buffer_sh[512];
-    int i;
 	unsigned char* temp_ch;
     struct force_array fm;
+	int comm_error = 0;
 
     // First step: Send data request to sensor
     buffer_ch[0] = TAG_REQ_FT_DATA;
@@ -158,21 +118,19 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
     buffer_ch[1] = temp_ch[0];
     buffer_ch[2] = temp_ch[1];
 	buffer_ch[3] = (unsigned char)processor_number;
-    if(sendto(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, g_len) == SOCKET_ERROR)
-	{
-		printf("\nsendto failed in 'read_ftdata' with error: %d", WSAGetLastError());
+	comm_error = send(buffer_ch, sizeof(buffer_ch));
+    if(comm_error){
+		printf("\nSending failed in 'read_ftdata' with error: %d", comm_error);
 	}
     // Second step: Wait for data & receive
     // Below should be a blocking call
-	
-    recvfrom(
-		g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, &g_len);
+
+	comm_error = listen(buffer_ch, sizeof(buffer_ch));
     tag = buffer_ch[0];
     if(tag == TAG_FT_DATA){
         // Convert from char array (8 bit) to short array (16 bit)
-        for(i=0; i<8; i++){
-          buffer_sh[i] = chararray2short((unsigned char*)buffer_ch+i*2+1);
+        for(int i=0; i<8; i++){
+        	buffer_sh[i] = chararray2short((unsigned char*)buffer_ch+i*2+1);
         }
     }
     else{
@@ -203,38 +161,42 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
 // 1 if failed to create handle
 
 short init_jr3(
-    unsigned long vendor_ID, unsigned long device_ID,
-    unsigned long number_of_board, short number_of_processors,
-    short download, short na){
-  // vendor_ID, device_ID, number_of_board, download is set on server
-  char buffer_ch[1024];
-  short error = 0;
+    	unsigned long vendor_ID, unsigned long device_ID,
+    	unsigned long number_of_board, short number_of_processors,
+    	short download, short na){
+	// vendor_ID, device_ID, number_of_board, download is set on server
+	char buffer_ch[1024];
+	int comm_error = 0;
+	short init_error = 0;
 
-  buffer_ch[0] = TAG_INIT;
-  buffer_ch[1] = (char)number_of_processors;
-  printf("\nSending init request...");
-  if (sendto(
-	  g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, g_len) == SOCKET_ERROR)
-  {  
-	  printf("\nsendto failed in 'init_jr3' with error: %d", WSAGetLastError());
-	  return -2;
-  }
-  printf("Done!");
-  // Wait for acknowledge messsage
-  printf("\nWaiting for response...");
-  recvfrom(
-	  g_socketC, buffer_ch, sizeof(buffer_ch), 0, (sockaddr*)&g_serverInfo, &g_len);
+	buffer_ch[0] = TAG_INIT;
+	buffer_ch[1] = (char)number_of_processors;
 
-  if(buffer_ch[0] == TAG_ACK_INIT){
-    error = (short)buffer_ch[1];
-	printf("Success!");
-  }
-  else{
-    error = -1;
-	printf("Fail!");
-  }
+	printf("\nSending init request...");
+	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	if (comm_error){
+		printf("\nSending failed in 'init_jr3' with error: %d", comm_error);
+		return -2;
+	}
+	printf("Done!");
+	// Wait for acknowledge messsage
+	printf("\nWaiting for response...");
+	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	if(comm_error){
+		printf("\nReceiving failed in 'init_jr3' with error: %d", comm_error);
+		return -2;
+	}
 
-  return error;
+	if(buffer_ch[0] == TAG_ACK_INIT){
+		init_error = (short)buffer_ch[1];
+		printf("Success!");
+	}
+	else{
+		init_error = -1;
+		printf("Fail!");
+	}
+
+	return init_error;
 }
 
 // Removes the environment
@@ -242,5 +204,3 @@ void close_jr3(short na){
 	//TODO No idea what's supposed to happen here.
 	//Just a dummy function so far such that code using the API won't crash.
 }
-
-#endif

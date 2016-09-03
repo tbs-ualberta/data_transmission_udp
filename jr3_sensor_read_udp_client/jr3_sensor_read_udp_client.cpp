@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	strcpy_s(ip_addr_scp, ip_addr_st.c_str());
 	short port_ss = (short)config.pInt("port_remote");
 
-	init_connection(ip_addr_scp, port_ss);
+	init_connection("0.0.0.0", 0, ip_addr_scp, port_ss);
 
 	if (init_jr3(0x1762, 0x3112, 1, 1, 1, 1)){
 		printf("\nSensor init failed.");
@@ -96,4 +96,3 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	system("Pause");
 	return 0;
 }
-
