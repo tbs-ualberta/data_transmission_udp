@@ -34,7 +34,10 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 	strcpy_s(ip_local_scp, tmp_st.c_str());
 	short port_local_ss = (short)config.pInt("port_local");
 
-	init_transmission(ip_local_scp, port_local_ss);
+	data_transmission transmission;
+
+	//TODO add error handling for init
+	transmission.init_transmission(ip_local_scp, port_local_ss);
 
 	unsigned char* tmp;
 	short filter_address;
@@ -45,7 +48,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 		char buffer_snd[1024];
 		ZeroMemory(buffer_rec, sizeof(buffer_rec));
 		ZeroMemory(buffer_snd, sizeof(buffer_snd));
-		if (!listen(buffer_rec, sizeof(buffer_rec)))
+		if (!transmission.listen(buffer_rec, sizeof(buffer_rec)))
 		{
 			switch (buffer_rec[0]) {
 			case TAG_INIT:
@@ -61,24 +64,28 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 				}
 				break;
 			case TAG_REQ_FT_DATA:
-				filter_address = chararray2short((unsigned char*)buffer_rec + 1);
+				filter_address = transmission.chararray2short(
+					(unsigned char*)buffer_rec + 1);
 				buffer_snd[0] = TAG_FT_DATA;
 				for (int i = 0; i<8; i++){
-					tmp = short2chararray(
+					tmp = transmission.short2chararray(
 						read_jr3(filter_address + i, buffer_rec[3], 1));
 					buffer_snd[i * 2 + 1] = tmp[0];
 					buffer_snd[i * 2 + 2] = tmp[1];
 				}
 				break;
 			case TAG_REQ_DATA:
-				filter_address = chararray2short((unsigned char*)buffer_rec + 1);
-				tmp = short2chararray(read_jr3(filter_address, buffer_rec[3], 1));
+				filter_address = transmission.chararray2short(
+					(unsigned char*)buffer_rec + 1);
+				tmp = transmission.short2chararray(
+					read_jr3(filter_address, buffer_rec[3], 1));
 				buffer_snd[0] = TAG_DATA;
 				buffer_snd[1] = tmp[0];
 				buffer_snd[2] = tmp[1];
 				break;
 			case TAG_REQ_OS_RST:
-				tmp = short2chararray(reset_offsets(buffer_rec[1], 1));
+				tmp = transmission.short2chararray(
+					reset_offsets(buffer_rec[1], 1));
 				buffer_snd[0] = TAG_ACK_OS_RST;
 				buffer_snd[1] = tmp[0];
 				buffer_snd[2] = tmp[1];
@@ -87,7 +94,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 				buffer_snd[0] = buffer_rec[0];
 				break;
 			}
-			send(buffer_snd, sizeof(buffer_snd));
+			transmission.send(buffer_snd, sizeof(buffer_snd));
 		}
 	}
 }

@@ -17,7 +17,6 @@ using namespace std;
 
 #pragma pack(1)
 
-
 int _tmain(int argc, _TCHAR* argv[], char* envp[])
 {
 	printf("\n----------------------------------------------");
@@ -42,6 +41,8 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	short port_local_ss = (short)config.pInt("port_local");
 	bool two_sensors = config.pBool("two_sensors");
 	short processor_number = config.pInt("sensor");
+
+	data_transmission transmission;
 
 	short filter_address = FILTER4;
 	short filter_num_ss = config.pInt("filter");
@@ -75,7 +76,8 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	if(!two_sensors) printf("\nSensor number: %d", processor_number);
 	printf("\nFilter number: %d", filter_num_ss);
 
-	init_transmission(ip_local_scp, port_local_ss,
+	//TODO add error handling for init
+	transmission.init_transmission(ip_local_scp, port_local_ss,
 		ip_remote_scp, port_remote_ss);
 
 	if (init_jr3(0x1762, 0x3112, 1, 2, 1, 1)){
@@ -166,6 +168,6 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 			num_doubles_ss = 6*2;
 		}
 
-		send(fm, num_doubles_ss);
+		transmission.send(fm, num_doubles_ss);
 	}
 }

@@ -7,11 +7,12 @@ using namespace std;
 SOCKET  g_socketC;
 struct sockaddr_in g_serverInfo;
 int g_len;
+data_transmission transmission;
 
 void init_connection(char* ip_local_scp, short port_local_ss,
         char* ip_remote_scp, short port_remote_ss){
 
-	int error = init_transmission(
+	int error = transmission.init_transmission(
 		ip_local_scp, port_local_ss, ip_remote_scp, port_remote_ss);
 	if(error) printf("\nSocket init failed with error: %ld\n", error);
 	else printf("\nSocket initialized on %s:%d.", ip_remote_scp, port_remote_ss);
@@ -34,25 +35,25 @@ short read_jr3(unsigned short address, short processor_number, short na){
 
 	//Step 1: Request data
 	buffer_ch[0] = TAG_REQ_DATA;
-	temp = short2chararray(address);
+	temp = transmission.short2chararray(address);
 	buffer_ch[1] = temp[0];
 	buffer_ch[2] = temp[1];
 	buffer_ch[3] = processor_number;
 
-	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.send(buffer_ch, sizeof(buffer_ch));
 	if (comm_error){
 		printf("\nSending failed in 'read_jr3' with error: %d", comm_error);
 	}
 
 	//Step 2: Wait for data to be received
-	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
 	if (comm_error){
 		printf("\nListening failed in 'read_jr3' with error: %d", comm_error);
 	}
 	tag = buffer_ch[0];
 	short result;
 	if (tag == TAG_DATA){
-		result = chararray2short((unsigned char*)buffer_ch+1);
+		result = transmission.chararray2short((unsigned char*)buffer_ch+1);
 	}
 
 	return result;
@@ -78,14 +79,14 @@ short reset_offsets(short processor_number, short na){
 	//Step 1: Request data
 	buffer_ch[0] = TAG_REQ_OS_RST;
 	buffer_ch[1] = processor_number;
-	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.send(buffer_ch, sizeof(buffer_ch));
 	if (comm_error){
 		printf("\nSending failed in 'reset_offsets' with error: %d",
 			comm_error);
 	}
 
 	//Step 2: Wait for data to receive
-	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
 	if(comm_error){
 		printf("Listening failed in 'reset_offsets' with error: %d",
 			comm_error);
@@ -93,7 +94,7 @@ short reset_offsets(short processor_number, short na){
 	tag = buffer_ch[0];
 	short result;
 	if (tag == TAG_ACK_OS_RST){
-		result = chararray2short((unsigned char*)buffer_ch + 1);
+		result = transmission.chararray2short((unsigned char*)buffer_ch + 1);
 	}
 
 	return result;
@@ -114,23 +115,24 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
 
     // First step: Send data request to sensor
     buffer_ch[0] = TAG_REQ_FT_DATA;
-    temp_ch = short2chararray(filter_address);
+    temp_ch = transmission.short2chararray(filter_address);
     buffer_ch[1] = temp_ch[0];
     buffer_ch[2] = temp_ch[1];
 	buffer_ch[3] = (unsigned char)processor_number;
-	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.send(buffer_ch, sizeof(buffer_ch));
     if(comm_error){
 		printf("\nSending failed in 'read_ftdata' with error: %d", comm_error);
 	}
     // Second step: Wait for data & receive
     // Below should be a blocking call
 
-	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
     tag = buffer_ch[0];
     if(tag == TAG_FT_DATA){
         // Convert from char array (8 bit) to short array (16 bit)
         for(int i=0; i<8; i++){
-        	buffer_sh[i] = chararray2short((unsigned char*)buffer_ch+i*2+1);
+        	buffer_sh[i] = transmission.chararray2short(
+                (unsigned char*)buffer_ch+i*2+1);
         }
     }
     else{
@@ -173,7 +175,7 @@ short init_jr3(
 	buffer_ch[1] = (char)number_of_processors;
 
 	printf("\nSending init request...");
-	comm_error = send(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.send(buffer_ch, sizeof(buffer_ch));
 	if (comm_error){
 		printf("\nSending failed in 'init_jr3' with error: %d", comm_error);
 		return -2;
@@ -181,7 +183,7 @@ short init_jr3(
 	printf("Done!");
 	// Wait for acknowledge messsage
 	printf("\nWaiting for response...");
-	comm_error = listen(buffer_ch, sizeof(buffer_ch));
+	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
 	if(comm_error){
 		printf("\nReceiving failed in 'init_jr3' with error: %d", comm_error);
 		return -2;
