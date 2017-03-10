@@ -1,14 +1,11 @@
 
-#ifndef JR3PCI_FT_TBS
-#define JR3PCI_FT_TBS
-
 #define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include <crtdbg.h>
 #include <stdio.h>
 #include "JR3PCIIoctls.h"
 #pragma pack(1)
-#include "jr3pci_ft.h"
+#include "jr3pci_ft_tbs.h"
 
 
 HANDLE g_hJr3PciDevice;
@@ -73,7 +70,7 @@ void write_jr3(unsigned short address, unsigned short value, short processor_num
 		&dwBytesReturned,						// byte count
 		NULL);									// overlapped information
 
-	// For debugging... 
+	// For debugging...
 	//_ASSERTE(bSuccess && (dwBytesReturned == sizeof(JR3PCI_WRITE_WORD_RESPONSE_PARAMS)));
 	//_ASSERTE(WriteWordResponseParams.iStatus == JR3PCI_STATUS_OK);
 }
@@ -117,20 +114,20 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
 
 
 // Input Values: vendor_ID, device_ID, number_of_board, number_of_processors, download
-// where 
+// where
 // number_of_board = 1 to single board system
 // number_of_processors is the number of processors in the board (1 for simple PCI boards)
-// download is a value that should be 1 (if code is to be downloaded) or any other value 
+// download is a value that should be 1 (if code is to be downloaded) or any other value
 // if code was already download and user wants only to open an handle to the board.
 // 0 if success
 // 1 if failed to create handle
 short init_jr3(unsigned long vendor_ID, unsigned long device_ID, unsigned long number_of_board, short number_of_processors, short download, short na){
-	
+
 	char szDeviceName[30];
 	sprintf(szDeviceName, "\\\\.\\JR3PCI%d", (int)number_of_board);
 
 	////////////////////////////////////
-	// Open a handle to the device. 
+	// Open a handle to the device.
 	////////////////////////////////////
 	g_hJr3PciDevice = CreateFileA(
 		szDeviceName,					// file name
@@ -144,14 +141,59 @@ short init_jr3(unsigned long vendor_ID, unsigned long device_ID, unsigned long n
 	if(g_hJr3PciDevice == INVALID_HANDLE_VALUE)
 	{
 		return 1;
-	} 
+	}
 	return 0;
 }
 
 // Removes the environment
 void close_jr3(short na){
-	//TODO No idea what's supposed to happen here. 
+	//TODO No idea what's supposed to happen here.
 	//Just a dummy function so far such that code using the API won't crash.
 }
 
-#endif
+// Set translation of sensor frame about axis
+// Input values: link type, transform num, translation in mm*10, processor number
+// transform num: where in the table the transformation value should be stored (0, 1, 2...)
+// translation: by how much should be translated (mm*10)
+short set_translation(enum link_types link_types_en, short transform_num, short translation, short processor_number, short na){
+
+	short type_ss = 0;
+	switch (link_types_en)
+	{
+	case tx:
+		type_ss = 1;
+		break;
+	case ty:
+		type_ss = 2;
+		break;
+	case tz:
+		type_ss = 3;
+		break;
+	default:
+		return -1;
+	}
+	// The type of transformation (about Z-axis)
+	transform_num = transform_num * 0x10;
+	write_jr3(TRANSFORMS + transform_num, type_ss, processor_number, 1);
+	// The amount of translation
+	write_jr3(TRANSFORMS + transform_num + 1, translation, processor_number, 1);
+	// That's it for transformation
+	write_jr3(TRANSFORMS + transform_num + 2, 0, processor_number, 1);
+
+	//Wait for completion
+	while (read_jr3(ERRORS, processor_number, 1));
+
+	return read_jr3(COMMAND_W0, processor_number, 1);
+}
+
+// Use Transform
+//Input parameters: transform num, processor number
+// Return Value: 0 if command was successful
+short use_transform(short transform_num, short processor_number, short na){
+
+	write_jr3(COMMAND_W0, 0x500 + transform_num, processor_number, 1);
+
+	//Wait for completion
+	while (read_jr3(ERRORS, processor_number, 1));
+	return read_jr3(COMMAND_W0, processor_number, 1);
+}

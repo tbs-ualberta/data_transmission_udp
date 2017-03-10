@@ -103,7 +103,8 @@ short reset_offsets(short processor_number, short na){
 // Read force/torque data
 // Input parameters: filter address, processor number
 // Return Value: F/T data in a force_array format
-struct force_array read_ftdata(short filter_address, short processor_number, short na){
+struct force_array read_ftdata(
+    short filter_address, short processor_number, short na){
     //TODO Check if init was done
 
     char buffer_ch[1024];
@@ -149,6 +150,65 @@ struct force_array read_ftdata(short filter_address, short processor_number, sho
 	fm.v2 = buffer_sh[7];
 
 	return fm;
+}
+
+int read_ftdata_2(short filter_address, struct force_array* fm_ptr, short na){
+
+    //TODO Check if init was done
+
+    char buffer_ch[1024];
+    unsigned char tag;
+    short buffer_sh[512];
+	unsigned char* temp_ch;
+    struct force_array fm[2];
+	int comm_error = 0;
+
+    // First step: Send data request to sensor
+    buffer_ch[0] = TAG_REQ_FT_DATA_2;
+    temp_ch = transmission.short2chararray(filter_address);
+    buffer_ch[1] = temp_ch[0];
+    buffer_ch[2] = temp_ch[1];
+	comm_error = transmission.send(buffer_ch, sizeof(buffer_ch));
+    if (comm_error) {
+		printf("\nSending failed in 'read_ftdata_2' with error: %d", comm_error);
+        fm_ptr = NULL;
+	} else {
+        // Second step: Wait for data & receive
+        // Below should be a blocking call
+
+    	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
+        tag = buffer_ch[0];
+        if (tag == TAG_FT_DATA_2)) {
+            // Convert from char array (8 bit) to short array (16 bit)
+            for(int i=0; i<16; i++){
+            	buffer_sh[i] = transmission.chararray2short(
+                    (unsigned char*)buffer_ch+i*2+1);
+            }
+
+        	fm[0].fx = buffer_sh[0];
+        	fm[0].fy = buffer_sh[1];
+        	fm[0].fz = buffer_sh[2];
+        	fm[0].mx = buffer_sh[3];
+        	fm[0].my = buffer_sh[4];
+        	fm[0].mz = buffer_sh[5];
+        	fm[0].v1 = buffer_sh[6];
+        	fm[0].v2 = buffer_sh[7];
+            fm[1].fx = buffer_sh[8];
+        	fm[1].fy = buffer_sh[9];
+        	fm[1].fz = buffer_sh[10];
+        	fm[1].mx = buffer_sh[11];
+        	fm[1].my = buffer_sh[12];
+        	fm[1].mz = buffer_sh[13];
+        	fm[1].v1 = buffer_sh[14];
+        	fm[1].v2 = buffer_sh[15];
+
+            fm_ptr = fm;
+        } else {
+            fm_ptr = NULL;
+        }
+    }
+
+    return comm_error;
 }
 
 
