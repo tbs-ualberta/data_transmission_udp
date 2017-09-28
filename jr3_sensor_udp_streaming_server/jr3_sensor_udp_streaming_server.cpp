@@ -89,6 +89,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	short port_local_ss = (short)config.pInt("port_local");
 	_two_sensors = config.pBool("two_sensors");
 	_processor_number = config.pInt("sensor");
+	short sample_time_ss = config.pInt("ts");
 
 	_filter_address = FILTER4;
 	short filter_num_ss = config.pInt("filter");
@@ -191,13 +192,14 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	{
 		return -1;
 	}
-	wTimerRes = min(max(tc.wPeriodMin, TIME_RESOLUTION), tc.wPeriodMax);
+	wTimerRes = min(max(tc.wPeriodMin, TIME_RESOLUTION*sample_time_ss), tc.wPeriodMax);
 	timeBeginPeriod(wTimerRes);
 
 	//Start timer callback
 	MMRESULT timer = timeSetEvent(TIME_PERIOD, 0, timercbk, 0, TIME_PERIODIC);
 
-	printf("\nStreaming to %s:%d... \nPress any key to quit.", ip_remote_scp, port_remote_ss);
+	printf("\nStreaming to %s:%d at %.0fHz... \nPress any key to quit.", 
+		ip_remote_scp, port_remote_ss, 1/(TIME_RESOLUTION*(double)sample_time_ss/1000.));
 	while (!_kbhit());
 
 	//Stop timer callback
