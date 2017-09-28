@@ -30,7 +30,8 @@ bool _two_sensors;
 short _processor_number;
 short _filter_address;
 double _scale[6];
-double _fm[12];
+double _fm[12]; 
+short _do_send[6];
 
 //Timer Vars
 TIMECAPS tc;
@@ -61,8 +62,16 @@ void CALLBACK timercbk(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1
 		_fm[11] = _scale[5] * ft1.mz;
 		num_doubles_ss = 6 * 2;
 	}
+	double fm_send[6];
+	short cnt = 0;
+	for (int i = 0; i < 6; i++){
+		if (_do_send[i]){
+			fm_send[cnt] = _fm[i];
+			cnt++;
+		}
+	}
 
-	_transmission.send(_fm, num_doubles_ss);
+	_transmission.send(fm_send, cnt);
 }
 
 int _tmain(int argc, _TCHAR* argv[], char* envp[])
@@ -90,6 +99,13 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	_two_sensors = config.pBool("two_sensors");
 	_processor_number = config.pInt("sensor");
 	short sample_time_ss = config.pInt("ts");
+	//TODO Below needs to be made less awkward
+	_do_send[0] = config.pInt("fx");
+	_do_send[1] = config.pInt("fy");
+	_do_send[2] = config.pInt("fz");
+	_do_send[3] = config.pInt("mx");
+	_do_send[4] = config.pInt("my");
+	_do_send[5] = config.pInt("mz");
 
 	_filter_address = FILTER4;
 	short filter_num_ss = config.pInt("filter");
