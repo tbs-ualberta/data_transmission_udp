@@ -3,7 +3,7 @@
 
 #include <crtdbg.h>
 #include <string>
-#include "jr3pci_ft.h"
+#include "jr3pci_ft_tbs.h"
 #include "data_transmission.h"
 
 void init_connection(char*, short, char*, short);

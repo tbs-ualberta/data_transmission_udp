@@ -85,10 +85,9 @@
   <ItemGroup>
     <ClInclude Include="..\includes\config.h" />
     <ClInclude Include="..\includes\data_transmission.h" />
-    <ClInclude Include="..\includes\jr3pci_ft.h" />
     <ClInclude Include="..\includes\jr3_message_tags.h" />
     <ClInclude Include="..\includes\log.h" />
-    <ClInclude Include="tbs_jr3_ft_udp_client.h" />
+    <ClInclude Include="..\includes\tbs_jr3_ft_udp_client.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -96,9 +95,9 @@
     <ClCompile Include="..\includes\config.cpp" />
     <ClCompile Include="..\includes\data_transmission.cpp" />
     <ClCompile Include="..\includes\log.cpp" />
+    <ClCompile Include="..\includes\tbs_jr3_ft_udp_client.cpp" />
     <ClCompile Include="jr3_sensor_read_udp_client.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="tbs_jr3_ft_udp_client.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

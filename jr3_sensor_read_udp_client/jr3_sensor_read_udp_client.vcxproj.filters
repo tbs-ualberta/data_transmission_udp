@@ -24,12 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tbs_jr3_ft_udp_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\includes\jr3pci_ft.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\includes\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,15 +36,15 @@
     <ClInclude Include="..\includes\data_transmission.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\includes\tbs_jr3_ft_udp_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="jr3_sensor_read_udp_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tbs_jr3_ft_udp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\includes\config.cpp">
@@ -60,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\includes\data_transmission.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\includes\tbs_jr3_ft_udp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
