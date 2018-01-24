@@ -39,7 +39,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 
 	comm_error = transmission.init_transmission(ip_local_scp, port_local_ss);
 	if(comm_error) printf("\nSocket init failed with error: %ld\n", comm_error);
-	else printf("\nSocket initialized on %s:%d.", ip_remote_scp, port_remote_ss);
+	else printf("\nSocket initialized on %s:%d.", ip_local_scp, port_local_ss);
 
 	unsigned char* tmp;
 	short filter_address;
@@ -49,10 +49,11 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 		//TODO reduce the buffer size
 		char buffer_rec[1024];
 		char buffer_snd[1024];
+		short amnt_sensors_ss = 0;
+		int idx = 0;
 		ZeroMemory(buffer_rec, sizeof(buffer_rec));
 		ZeroMemory(buffer_snd, sizeof(buffer_snd));
 		comm_error = transmission.listen(buffer_rec, sizeof(buffer_rec));
-		short amnt_sensors_ss = 0;
 		if(!comm_error)
 		{
 			switch (buffer_rec[0]) {
@@ -88,8 +89,8 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[]) {
 					buffer_snd[i*2+2] = tmp[1];
 					tmp = transmission.short2chararray(
 						read_jr3(filter_address + i, 1, 1));
-					buffer_snd[i*2+1+8] = tmp[0];
-					buffer_snd[i*2+2+8] = tmp[1];
+					buffer_snd[i*2+1+16] = tmp[0];
+					buffer_snd[i*2+2+16] = tmp[1];
 				}
 				break;
 			case TAG_REQ_DATA:

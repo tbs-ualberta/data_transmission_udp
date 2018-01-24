@@ -31,7 +31,7 @@ short _processor_number;
 short _filter_address;
 double _scale[6];
 double _fm[12]; 
-short _do_send[6];
+short _do_send[12];
 
 //Timer Vars
 TIMECAPS tc;
@@ -62,9 +62,9 @@ void CALLBACK timercbk(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1
 		_fm[11] = _scale[5] * ft1.mz;
 		num_doubles_ss = 6 * 2;
 	}
-	double fm_send[6];
+	double fm_send[12];
 	short cnt = 0;
-	for (int i = 0; i < 6; i++){
+	for (int i = 0; i < num_doubles_ss; i++){
 		if (_do_send[i]){
 			fm_send[cnt] = _fm[i];
 			cnt++;
@@ -106,6 +106,12 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	_do_send[3] = config.pInt("mx");
 	_do_send[4] = config.pInt("my");
 	_do_send[5] = config.pInt("mz");
+	_do_send[6] = config.pInt("fx");
+	_do_send[7] = config.pInt("fy");
+	_do_send[8] = config.pInt("fz");
+	_do_send[9] = config.pInt("mx");
+	_do_send[10] = config.pInt("my");
+	_do_send[11] = config.pInt("mz");
 
 	_filter_address = FILTER4;
 	short filter_num_ss = config.pInt("filter");
