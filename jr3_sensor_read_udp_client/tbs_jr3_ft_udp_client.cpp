@@ -152,7 +152,7 @@ struct force_array read_ftdata(
 	return fm;
 }
 
-int read_ftdata_2(short filter_address, struct force_array* fm_ptr, short na){
+int read_ftdata_2(short filter_address, force_array* fm_ptr, short na){
 
     //TODO Check if init was done
 
@@ -160,7 +160,6 @@ int read_ftdata_2(short filter_address, struct force_array* fm_ptr, short na){
     unsigned char tag;
     short buffer_sh[512];
 	unsigned char* temp_ch;
-    struct force_array fm[2];
 	int comm_error = 0;
 
     // First step: Send data request to sensor
@@ -178,31 +177,30 @@ int read_ftdata_2(short filter_address, struct force_array* fm_ptr, short na){
 
     	comm_error = transmission.listen(buffer_ch, sizeof(buffer_ch));
         tag = buffer_ch[0];
-        if (tag == TAG_FT_DATA_2)) {
+        if (tag == TAG_FT_DATA_2) {
             // Convert from char array (8 bit) to short array (16 bit)
             for(int i=0; i<16; i++){
             	buffer_sh[i] = transmission.chararray2short(
                     (unsigned char*)buffer_ch+i*2+1);
             }
 
-        	fm[0].fx = buffer_sh[0];
-        	fm[0].fy = buffer_sh[1];
-        	fm[0].fz = buffer_sh[2];
-        	fm[0].mx = buffer_sh[3];
-        	fm[0].my = buffer_sh[4];
-        	fm[0].mz = buffer_sh[5];
-        	fm[0].v1 = buffer_sh[6];
-        	fm[0].v2 = buffer_sh[7];
-            fm[1].fx = buffer_sh[8];
-        	fm[1].fy = buffer_sh[9];
-        	fm[1].fz = buffer_sh[10];
-        	fm[1].mx = buffer_sh[11];
-        	fm[1].my = buffer_sh[12];
-        	fm[1].mz = buffer_sh[13];
-        	fm[1].v1 = buffer_sh[14];
-        	fm[1].v2 = buffer_sh[15];
+        	fm_ptr[0].fx = buffer_sh[0];
+			fm_ptr[0].fy = buffer_sh[1];
+			fm_ptr[0].fz = buffer_sh[2];
+			fm_ptr[0].mx = buffer_sh[3];
+			fm_ptr[0].my = buffer_sh[4];
+			fm_ptr[0].mz = buffer_sh[5];
+			fm_ptr[0].v1 = buffer_sh[6];
+			fm_ptr[0].v2 = buffer_sh[7];
+			fm_ptr[1].fx = buffer_sh[8];
+			fm_ptr[1].fy = buffer_sh[9];
+			fm_ptr[1].fz = buffer_sh[10];
+			fm_ptr[1].mx = buffer_sh[11];
+			fm_ptr[1].my = buffer_sh[12];
+			fm_ptr[1].mz = buffer_sh[13];
+			fm_ptr[1].v1 = buffer_sh[14];
+			fm_ptr[1].v2 = buffer_sh[15];
 
-            fm_ptr = fm;
         } else {
             fm_ptr = NULL;
         }
