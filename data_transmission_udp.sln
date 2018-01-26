@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jr3_sensor_read_udp_client"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udp_streaming_client", "udp_streaming_client\udp_streaming_client.vcxproj", "{E03B803E-1364-474D-8AC0-C4629980330A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MicronTracker_udp_streaming_server", "MicronTracker_udp_streaming_server\MicronTracker_udp_streaming_server.vcxproj", "{2C903A48-A314-44B4-A979-451615D78A37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{E03B803E-1364-474D-8AC0-C4629980330A}.Debug|Win32.Build.0 = Debug|Win32
 		{E03B803E-1364-474D-8AC0-C4629980330A}.Release|Win32.ActiveCfg = Release|Win32
 		{E03B803E-1364-474D-8AC0-C4629980330A}.Release|Win32.Build.0 = Release|Win32
+		{2C903A48-A314-44B4-A979-451615D78A37}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2C903A48-A314-44B4-A979-451615D78A37}.Debug|Win32.Build.0 = Debug|Win32
+		{2C903A48-A314-44B4-A979-451615D78A37}.Release|Win32.ActiveCfg = Release|Win32
+		{2C903A48-A314-44B4-A979-451615D78A37}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
