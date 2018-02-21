@@ -79,13 +79,14 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	strcpy_s(ip_remote_scp, tmp.c_str());
 	short port_remote_ss = (short)config.pInt("port_remote");
 	short port_local_ss = (short)config.pInt("port_local");
-	tmp = config.pString("names_marker").c_str();
+	tmp = config.pString("name_markers").c_str();
 	char marker_names_scp[1024];
 	strcpy_s(marker_names_scp, tmp.c_str());
 	short num_markers = (short)config.pInt("num_markers");
 
 	printf("\nLocal IP address: %s:%d", ip_local_scp, port_local_ss);
 	printf("\nRemote IP address: %s:%d", ip_remote_scp, port_remote_ss);
+	printf("\nSupplied markers: %s", marker_names_scp);
 	
 	int comm_error = 0;
 	comm_error = transmission.init_transmission(ip_local_scp, port_local_ss,
@@ -130,12 +131,18 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	Sleep(3000);
 
 	const short len_data_ss = 3;
-	double data[len_data_ss * num_markers];
-	for (int i = 0; i < len_data_ss * num_markers) {
+	double *data = (double *)malloc(num_markers * len_data_ss * sizeof(double));
+	if (data == NULL) exit(1);
+	for (int i = 0; i < num_markers * len_data_ss; i++) {
 		data[i] = 0.0;
 	}
 	
 	int i = 0;
+
+	char marker_names_tmp[1024];
+	char *marker_names_tok;
+	const char *delim = " ,";
+	char *next_token;
 
 	clock_t start;
 	clock_t end;
@@ -192,10 +199,8 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 				MTC(Xform3D_HazardCodeGet(PoseXf, &Hazard));
 
 				// Send position data if identified marker matches specified one
-				char marker_names_tmp[1024];
-				char marker_names_tok;
 				strcpy_s(marker_names_tmp, marker_names_scp);
-				marker_names_tok = strtok(marker_names_tmp, " ,");
+				marker_names_tok = strtok_s(marker_names_tmp, delim, &next_token);
 				int ind_marker = 0;
 				while (marker_names_tok != NULL) {
 					if (!strcmp(MarkerName, marker_names_tok)) {
@@ -205,10 +210,12 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 						break;
 					}
 					ind_marker++;
-					marker_names_tok = strtok(NULL, " ,");
+					marker_names_tok = strtok_s(NULL, delim, &next_token);
 				}
 			}
 		}
+		printf("\nData: %3.2f, %3.2f, %3.2f, %3.2f, %3.2f, %3.2f",
+			data[0], data[1], data[2], data[3], data[4], data[5]);
 		comm_error = transmission.send(data, num_markers * len_data_ss);
 
 		end = clock();
@@ -219,6 +226,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 
 	//-=-=-=- CLEANUP -=-=-=-//
 	// Free up all resources taken
+	free(data);
 
 	Collection_Free(IdentifiedMarkers);
 	Xform3D_Free(PoseXf);
