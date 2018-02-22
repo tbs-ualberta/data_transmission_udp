@@ -49,7 +49,7 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 		if (getMTHome(MTHome, sizeof(MTHome)) < 0) {
 			// No Environment
 			printf("MTHome environment variable is not set!\n");
-			//return 0;
+			return -1;
 		}
 		else {
 			sprintf_s(calibrationDir, "%s\\CalibrationFiles", MTHome);
@@ -127,9 +127,6 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	mtHandle PoseXf = Xform3D_New();
 
 	//-=-=-=- DATA CAPTURE AND DEPOSITING -=-=-=-//
-	//fprintf(stderr, "\nPress any key to quit.\n");
-	Sleep(3000);
-
 	const short len_data_ss = 3;
 	double *data = (double *)malloc(num_markers * len_data_ss * sizeof(double));
 	if (data == NULL) exit(1);
@@ -149,27 +146,35 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	float seconds;
 	float sample_time = (1 / (float)20);
 
-	printf("\nStreaming to %s:%d... \nPress any key to quit.", ip_remote_scp, port_remote_ss);
+	printf("\nPreparing to stream to %s:%d... \nPress any key to quit.", ip_remote_scp, port_remote_ss);
 	while ((!_kbhit()) && (!comm_error)) {
 		start = clock();
+		
 		MTC(Cameras_GrabFrame(NULL)); // Grab a frame (all cameras together)
 		MTC(Markers_ProcessFrame(NULL)); // Process the frame(s) to obtain measurements
+		
 		if (i < 40) {
 			i++;
+			if (i == 40) {
+				printf("\nStreaming now.");
+			}
 			continue; // The first 20 frames are auto-adjustment frames, and would be ignored here
 		}
+
 		// Here, MTC internally maintains the measurement results.
 		// Those results can be accessed until the next call to Markers_ProcessFrame, when they
 		// are updated to reflect the next frame's content.
 		// First, we will obtain the collection of the markers that were identified.
 		MTC(Markers_IdentifiedMarkersGet(NULL, IdentifiedMarkers));
 		// printf("%d: identified %d marker(s)\n", i, Collection_Count(IdentifiedMarkers));
+
 		// Now we iterate on the identified markers (if any), and report their name and their pose
 		for (int j = 1; j <= Collection_Count(IdentifiedMarkers); j++) {
 			// Obtain the marker's handle, and use it to obtain the pose in the current camera's space
 			// using our Xform3D object, PoseXf.
 			mtHandle Marker = Collection_Int(IdentifiedMarkers, j);
 			MTC(Marker_Marker2CameraXfGet(Marker, CurrCamera, PoseXf, &IdentifyingCamera));
+			
 			// We check the IdentifyingCamera output to find out if the pose is, indeed,
 			// available in the current camera space. If IdentifyingCamera==0, the current camera's
 			// coordinate space is not registered with any of the cameras which actually identified
@@ -214,8 +219,8 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 				}
 			}
 		}
-		printf("\nData: %3.2f, %3.2f, %3.2f, %3.2f, %3.2f, %3.2f",
-			data[0], data[1], data[2], data[3], data[4], data[5]);
+		//printf("\nData: %3.2f, %3.2f, %3.2f, %3.2f, %3.2f, %3.2f",
+		//	data[0], data[1], data[2], data[3], data[4], data[5]);
 		comm_error = transmission.send(data, num_markers * len_data_ss);
 
 		end = clock();
