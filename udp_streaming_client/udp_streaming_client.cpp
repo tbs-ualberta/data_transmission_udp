@@ -10,7 +10,13 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 {
 	data_transmission transmission;
 
-	Config config("udp_streaming_client.cfg", envp);
+	// Read first command-line argument (name of config file)
+	string name_config_st = "udp_streaming_client.cfg";
+	if (argc > 1) {
+		name_config_st = argv[1];
+	}
+
+	Config config(name_config_st, envp);
 	string ip_addr_st = config.pString("ip_local");
 	char ip_local_scp[1024];
 	strcpy_s(ip_local_scp, ip_addr_st.c_str());

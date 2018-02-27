@@ -12,7 +12,14 @@
 int _tmain(int argc, _TCHAR* argv[], char* envp[])
 {
 
-	Config config("jr3_sensor_read_udp_client.cfg", envp);
+	// Read first command-line argument (name of config file)
+	string name_config_st = "jr3_sensor_read_udp_client.cfg";
+	if (argc > 1) {
+		name_config_st = argv[1];
+	}
+
+	Config config(name_config_st, envp);
+
 	string ip_addr_st = config.pString("ip_remote");
 	char ip_addr_scp[1024];
 	strcpy_s(ip_addr_scp, ip_addr_st.c_str());

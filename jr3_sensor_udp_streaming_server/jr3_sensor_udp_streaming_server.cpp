@@ -84,9 +84,13 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	printf("\n----------------------------------------------");
 	printf("\n");
 
-	Config config(
-		"jr3_sensor_udp_streaming_server.cfg",
-		envp);
+	// Read first command-line argument (name of config file)
+	string name_config_st = "jr3_sensor_udp_streaming_server.cfg";
+	if (argc > 1) {
+		name_config_st = argv[1];
+	}
+
+	Config config(name_config_st, envp);
 
 	string tmp = config.pString("ip_local").c_str();
 	char ip_local_scp[1024];
