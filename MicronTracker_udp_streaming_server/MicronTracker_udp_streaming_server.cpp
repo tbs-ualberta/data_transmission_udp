@@ -63,7 +63,13 @@ int _tmain(int argc, _TCHAR* argv[], char* envp[])
 	// Create an instance of data_transmission class
 	data_transmission transmission;
 
-	Config config("MicronTracker_udp_streaming_server.cfg", envp);
+	// Read first command-line argument (name of config file)
+	string name_config_st = "MicronTracker_udp_streaming_server.cfg";
+	if (argc > 1) {
+		name_config_st = argv[1];
+	}
+
+	Config config(name_config_st, envp);
 
 	string tmp = config.pString("ip_local").c_str();
 	char ip_local_scp[1024];
